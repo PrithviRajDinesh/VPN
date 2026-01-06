@@ -1,10 +1,10 @@
-# 🔒 Namma Gokul VPN
+# 🔒 VPN
 
 A lightweight, secure VPN implementation written in C++ using TUN/TAP interfaces and ChaCha20-Poly1305 encryption.
 
 ## 📋 Overview
 
-Namma Gokul VPN is a custom VPN solution that creates an encrypted tunnel between a client and server using:
+This VPN is a custom VPN solution that creates an encrypted tunnel between a client and server using:
 - **TUN devices** for virtual network interfaces
 - **ChaCha20-Poly1305 AEAD** encryption for security
 - **UDP protocol** for transport
