@@ -1,0 +1,44 @@
+# Compiled binaries
+vpn_client
+vpn_server
+
+# HTML files (frontend)
+*.html
+
+# C++ compiled files
+*.o
+*.out
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+
+# Build directories
+build/
+bin/
+obj/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Core dumps
+core
+core.*
