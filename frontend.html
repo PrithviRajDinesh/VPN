@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Namma Gokul VPN Dashboard</title>
+    <title>VPN Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -43,7 +43,7 @@
 
         .dashboard {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -182,6 +182,99 @@
             color: #666;
         }
 
+        .clients-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .client-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease;
+        }
+
+        .client-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .client-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .client-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .client-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .client-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .detail-label {
+            color: #666;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #667eea;
+            font-family: monospace;
+        }
+
+        .no-clients {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .no-clients svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f5c6cb;
+        }
+
         .logs-container {
             grid-column: 1 / -1;
             max-height: 300px;
@@ -225,6 +318,11 @@
             color: #f57c00;
         }
 
+        .log-entry.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         .log-timestamp {
             font-weight: 600;
             min-width: 80px;
@@ -258,6 +356,12 @@
             font-family: monospace;
         }
 
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
@@ -272,7 +376,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔒 Namma Gokul VPN</h1>
+            <h1>🔒 VPN Dashboard</h1>
             <p>Secure • Encrypted • Private</p>
         </div>
 
@@ -283,7 +387,7 @@
                     <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
                     </svg>
-                    Connection Control
+                    API Connection
                 </div>
 
                 <div class="status-indicator disconnected" id="statusIndicator">
@@ -295,34 +399,26 @@
                 <h3 id="statusText" style="color: #666; margin-bottom: 20px;">Disconnected</h3>
 
                 <div class="input-group">
-                    <label for="serverIP">Server IP Address</label>
-                    <input type="text" id="serverIP" value="127.0.0.1" placeholder="Enter server IP">
+                    <label for="apiURL">API Server URL</label>
+                    <input type="text" id="apiURL" value="http://localhost:8080" placeholder="http://localhost:8080">
                 </div>
 
                 <button class="btn btn-connect" id="connectBtn" onclick="toggleConnection()">
-                    Connect to VPN
+                    Connect to API
                 </button>
 
                 <div class="connection-info" id="connectionInfo" style="display: none;">
                     <div class="info-row">
-                        <span class="info-label">Local IP:</span>
-                        <span class="info-value">10.8.0.2</span>
+                        <span class="info-label">API Endpoint:</span>
+                        <span class="info-value" id="apiEndpoint">-</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Server IP:</span>
-                        <span class="info-value">10.8.0.1</span>
+                        <span class="info-label">Status:</span>
+                        <span class="info-value" style="color: #28a745;">Connected</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Encryption:</span>
-                        <span class="info-value">ChaCha20-Poly1305</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Protocol:</span>
-                        <span class="info-value">UDP Port 1194</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Connected Time:</span>
-                        <span class="info-value" id="connectionTime">00:00:00</span>
+                        <span class="info-label">Refresh Rate:</span>
+                        <span class="info-value">2 seconds</span>
                     </div>
                 </div>
             </div>
@@ -338,26 +434,42 @@
 
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <div class="stat-value" id="bytesSent">0 KB</div>
-                        <div class="stat-label">↑ Data Sent</div>
+                        <div class="stat-value" id="totalBytesSent">0 KB</div>
+                        <div class="stat-label">↑ Total Sent</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value" id="bytesReceived">0 KB</div>
-                        <div class="stat-label">↓ Data Received</div>
+                        <div class="stat-value" id="totalBytesReceived">0 KB</div>
+                        <div class="stat-label">↓ Total Received</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value" id="packetsSent">0</div>
-                        <div class="stat-label">Packets Sent</div>
+                        <div class="stat-value" id="activeClients">0</div>
+                        <div class="stat-label">Active Clients</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value" id="packetsReceived">0</div>
-                        <div class="stat-label">Packets Received</div>
+                        <div class="stat-value" id="avgUptime">0s</div>
+                        <div class="stat-label">Avg Uptime</div>
                     </div>
                 </div>
+            </div>
 
-                <div class="stat-item" style="margin-top: 15px;">
-                    <div class="stat-value" id="latency">0.0 ms</div>
-                    <div class="stat-label">Average Latency</div>
+            <!-- Connected Clients Panel -->
+            <div class="card">
+                <div class="card-title">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    Connected Clients
+                    <span style="margin-left: auto; background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8em;" id="clientCount">0</span>
+                </div>
+
+                <div id="errorContainer"></div>
+                <div class="clients-list" id="clientsList">
+                    <div class="no-clients">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        </svg>
+                        <p>Connect to API to see clients</p>
+                    </div>
                 </div>
             </div>
 
@@ -376,16 +488,7 @@
 
     <script>
         let isConnected = false;
-        let stats = {
-            bytesSent: 0,
-            bytesReceived: 0,
-            packetsSent: 0,
-            packetsReceived: 0,
-            latency: 0
-        };
-        let statsInterval;
-        let timeInterval;
-        let connectionStartTime;
+        let fetchInterval;
 
         function addLog(message, type = 'info') {
             const logsContainer = document.getElementById('logsContainer');
@@ -398,7 +501,6 @@
             `;
             logsContainer.insertBefore(logEntry, logsContainer.firstChild);
 
-            // Keep only last 15 logs
             while (logsContainer.children.length > 15) {
                 logsContainer.removeChild(logsContainer.lastChild);
             }
@@ -410,126 +512,191 @@
             return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
         }
 
-        function updateStats() {
-            stats.bytesSent += Math.floor(Math.random() * 2000) + 500;
-            stats.bytesReceived += Math.floor(Math.random() * 3000) + 800;
-            stats.packetsSent += Math.floor(Math.random() * 15) + 5;
-            stats.packetsReceived += Math.floor(Math.random() * 20) + 8;
-            stats.latency = (0.5 + Math.random() * 2).toFixed(2);
-
-            document.getElementById('bytesSent').textContent = formatBytes(stats.bytesSent);
-            document.getElementById('bytesReceived').textContent = formatBytes(stats.bytesReceived);
-            document.getElementById('packetsSent').textContent = stats.packetsSent;
-            document.getElementById('packetsReceived').textContent = stats.packetsReceived;
-            document.getElementById('latency').textContent = stats.latency + ' ms';
+        function formatUptime(seconds) {
+            if (seconds < 60) return seconds + 's';
+            if (seconds < 3600) return Math.floor(seconds / 60) + 'm ' + (seconds % 60) + 's';
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            return hours + 'h ' + mins + 'm';
         }
 
-        function updateConnectionTime() {
-            const elapsed = Math.floor((Date.now() - connectionStartTime) / 1000);
-            const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
-            const minutes = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
-            document.getElementById('connectionTime').textContent = `${hours}:${minutes}:${seconds}`;
+        async function fetchClients() {
+            const apiURL = document.getElementById('apiURL').value;
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = '';
+
+            try {
+                const response = await fetch(`${apiURL}/api/clients`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                renderClients(data.clients);
+                updateStats(data.clients);
+                
+            } catch (error) {
+                console.error('Error fetching clients:', error);
+                errorContainer.innerHTML = `
+                    <div class="error-message">
+                        <strong>⚠️ Error:</strong> ${error.message}
+                        <br><small>Make sure the VPN server is running on ${apiURL}</small>
+                    </div>
+                `;
+                addLog(`Failed to fetch clients: ${error.message}`, 'error');
+            }
+        }
+
+        function updateStats(clients) {
+            let totalSent = 0;
+            let totalReceived = 0;
+            let totalUptime = 0;
+
+            clients.forEach(client => {
+                totalSent += client.bytesSent || 0;
+                totalReceived += client.bytesReceived || 0;
+                totalUptime += client.uptimeSeconds || 0;
+            });
+
+            document.getElementById('totalBytesSent').textContent = formatBytes(totalSent);
+            document.getElementById('totalBytesReceived').textContent = formatBytes(totalReceived);
+            document.getElementById('activeClients').textContent = clients.length;
+            document.getElementById('avgUptime').textContent = clients.length > 0 
+                ? formatUptime(Math.floor(totalUptime / clients.length))
+                : '0s';
+        }
+
+        function renderClients(clients) {
+            const clientsList = document.getElementById('clientsList');
+            const clientCount = document.getElementById('clientCount');
+            
+            clientCount.textContent = clients.length;
+
+            if (clients.length === 0) {
+                clientsList.innerHTML = `
+                    <div class="no-clients">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        </svg>
+                        <p>No clients connected</p>
+                        <small style="color: #999;">Connect a VPN client to see it appear here</small>
+                    </div>
+                `;
+                return;
+            }
+
+            clientsList.innerHTML = clients.map(client => {
+                return `
+                    <div class="client-card">
+                        <div class="client-header">
+                            <div class="client-name">
+                                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                                Client ${client.vpnIP}
+                            </div>
+                            <span class="client-status status-online">Online</span>
+                        </div>
+                        <div class="client-details">
+                            <div class="detail-item">
+                                <span class="detail-label">VPN IP:</span>
+                                <span class="detail-value">${client.vpnIP}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Real IP:</span>
+                                <span class="detail-value">${client.realIP}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Port:</span>
+                                <span class="detail-value">${client.realPort}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Uptime:</span>
+                                <span class="detail-value">${formatUptime(client.uptimeSeconds)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Data Sent:</span>
+                                <span class="detail-value">${formatBytes(client.bytesSent)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Data Received:</span>
+                                <span class="detail-value">${formatBytes(client.bytesReceived)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function toggleConnection() {
-            const serverIP = document.getElementById('serverIP').value;
             const statusIndicator = document.getElementById('statusIndicator');
             const statusText = document.getElementById('statusText');
             const connectBtn = document.getElementById('connectBtn');
             const connectionInfo = document.getElementById('connectionInfo');
+            const apiURL = document.getElementById('apiURL').value;
 
             if (!isConnected) {
-                // Connect
-                addLog('Initializing VPN connection...', 'info');
+                addLog('Connecting to API...', 'info');
                 
-                setTimeout(() => {
-                    addLog(`Connecting to ${serverIP}:1194...`, 'info');
-                }, 500);
+                // Test connection
+                fetch(`${apiURL}/api/clients`)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Connection failed');
+                        return response.json();
+                    })
+                    .then(data => {
+                        isConnected = true;
+                        statusIndicator.className = 'status-indicator connected';
+                        statusIndicator.innerHTML = `<svg class="icon" style="width: 40px; height: 40px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                        statusText.textContent = 'Connected to API';
+                        statusText.style.color = '#388e3c';
+                        connectBtn.textContent = 'Disconnect';
+                        connectBtn.className = 'btn btn-disconnect';
+                        connectionInfo.style.display = 'block';
+                        document.getElementById('apiEndpoint').textContent = apiURL;
 
-                setTimeout(() => {
-                    addLog('Creating TUN interface (tun1)...', 'info');
-                }, 1000);
+                        addLog('✓ Successfully connected to API', 'success');
+                        addLog(`Found ${data.clients.length} client(s)`, 'info');
 
-                setTimeout(() => {
-                    addLog('Establishing encrypted tunnel (ChaCha20-Poly1305)...', 'info');
-                }, 1500);
-
-                setTimeout(() => {
-                    addLog('Configuring routes (10.8.0.2/24)...', 'info');
-                }, 2000);
-
-                setTimeout(() => {
-                    addLog('✓ VPN Connected Successfully!', 'success');
-                    isConnected = true;
-                    statusIndicator.className = 'status-indicator connected';
-                    statusIndicator.innerHTML = `
-                        <svg class="icon" style="width: 40px; height: 40px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    `;
-                    statusText.textContent = 'Connected & Secured';
-                    statusText.style.color = '#388e3c';
-                    connectBtn.textContent = 'Disconnect VPN';
-                    connectBtn.className = 'btn btn-disconnect';
-                    connectionInfo.style.display = 'block';
-
-                    // Start stats and time updates
-                    connectionStartTime = Date.now();
-                    statsInterval = setInterval(updateStats, 1000);
-                    timeInterval = setInterval(updateConnectionTime, 1000);
-                }, 2500);
+                        // Start fetching clients every 2 seconds
+                        fetchClients();
+                        fetchInterval = setInterval(fetchClients, 2000);
+                    })
+                    .catch(error => {
+                        addLog(`✗ Connection failed: ${error.message}`, 'error');
+                        addLog('Make sure vpn_server_api is running', 'warning');
+                    });
             } else {
-                // Disconnect
-                addLog('Disconnecting VPN...', 'info');
+                isConnected = false;
+                clearInterval(fetchInterval);
                 
-                setTimeout(() => {
-                    addLog('Removing routes...', 'info');
-                }, 300);
+                statusIndicator.className = 'status-indicator disconnected';
+                statusIndicator.innerHTML = `<svg class="icon" style="width: 40px; height: 40px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3"></path></svg>`;
+                statusText.textContent = 'Disconnected';
+                statusText.style.color = '#666';
+                connectBtn.textContent = 'Connect to API';
+                connectBtn.className = 'btn btn-connect';
+                connectionInfo.style.display = 'none';
 
-                setTimeout(() => {
-                    addLog('Closing encrypted tunnel...', 'info');
-                }, 600);
+                addLog('Disconnected from API', 'warning');
 
-                setTimeout(() => {
-                    addLog('✓ VPN Disconnected', 'warning');
-                    isConnected = false;
-                    statusIndicator.className = 'status-indicator disconnected';
-                    statusIndicator.innerHTML = `
-                        <svg class="icon" style="width: 40px; height: 40px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3"></path>
+                // Clear clients display
+                document.getElementById('clientsList').innerHTML = `
+                    <div class="no-clients">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                         </svg>
-                    `;
-                    statusText.textContent = 'Disconnected';
-                    statusText.style.color = '#666';
-                    connectBtn.textContent = 'Connect to VPN';
-                    connectBtn.className = 'btn btn-connect';
-                    connectionInfo.style.display = 'none';
-
-                    // Stop stats updates
-                    clearInterval(statsInterval);
-                    clearInterval(timeInterval);
-
-                    // Reset stats
-                    stats = {
-                        bytesSent: 0,
-                        bytesReceived: 0,
-                        packetsSent: 0,
-                        packetsReceived: 0,
-                        latency: 0
-                    };
-                    document.getElementById('bytesSent').textContent = '0 KB';
-                    document.getElementById('bytesReceived').textContent = '0 KB';
-                    document.getElementById('packetsSent').textContent = '0';
-                    document.getElementById('packetsReceived').textContent = '0';
-                    document.getElementById('latency').textContent = '0.0 ms';
-                }, 900);
+                        <p>Connect to API to see clients</p>
+                    </div>
+                `;
+                document.getElementById('clientCount').textContent = '0';
             }
         }
 
         // Initial log
         addLog('VPN Dashboard initialized', 'info');
-        addLog('Ready to connect', 'info');
+        addLog('Click "Connect to API" to start monitoring', 'info');
     </script>
 </body>
 </html>
